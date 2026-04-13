@@ -1,34 +1,27 @@
-import { useEffect, useState } from "react";
-import { TextField, Button, Container, Typography, Box, Checkbox, FormControlLabel } from "@mui/material";
-import { loginApi } from "../services/authService";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { TextField, Button, Container, Typography, Box, Checkbox, FormControlLabel } from "@mui/material";
+import * as authService from "../services/authService";
 
 function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    console.log(localStorage.getItem("token"));
-  }, [localStorage.getItem("token")]);
-
 
   const handleLogin = async () => {
     try {
-      const data = await loginApi(username, password, rememberMe);
+      const data = await authService.loginApi(username, password, rememberMe);
 
       localStorage.setItem("token", data.token);
       navigate("/tasks");
 
-    } catch (err: any) {
+    } catch (err) {
+      setErrorMessage("Wrong username or password");
       console.error(err);
     }
   };
-
-  const handleChangeRememberMe = () => {
-    setRememberMe(prev => !prev);
-  }
 
   return (
     <Container maxWidth="xs">
@@ -49,11 +42,14 @@ function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           fullWidth
         />
+
+        <Typography color="red">{errorMessage}</Typography>
+
         <FormControlLabel
           control={
             <Checkbox
               checked={rememberMe}
-              onChange={handleChangeRememberMe}
+              onChange={e => setRememberMe(e.target.checked)}
             />
           }
           label="Remember Me"
